@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import axios from "axios";
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 
 // Function to fetch todos with metadata
@@ -40,13 +40,16 @@ const InfiniteScroll = () => {
     },
   });
 
-  const { ref, inView } = useInView();
+  const { ref, inView } = useInView({
+    threshold: 1.0, // Trigger when the sentinel is fully in view
+  });
 
   useEffect(() => {
-   if(inView && hasNextPage){
-    console.log('nextttt Pageee')
-   }
-  }, [inView,hasNextPage]);
+    if (inView && hasNextPage) {
+      fetchNextPage(); // Fetch the next page when the sentinel is in view
+    }
+  }, [inView, fetchNextPage, hasNextPage]);
+
   return (
     <div>
       {isInfiniteLoading && <p>Loading more todos...</p>}
@@ -60,14 +63,9 @@ const InfiniteScroll = () => {
             .map((todo) => (
               <li key={todo.id}>{todo.title}</li>
             ))}
+          {/* Sentinel element to trigger infinite scroll */}
+          <div ref={ref} style={{ height: "1px" }}></div>
         </ul>
-      )}
-
-      {/* Button to load more todos */}
-      {hasNextPage && !isInfiniteLoading && (
-        <button onClick={() => fetchNextPage()} ref={ref}>
-          Load More
-        </button>
       )}
     </div>
   );
