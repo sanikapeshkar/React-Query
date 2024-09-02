@@ -1,22 +1,20 @@
 import axios from "axios";
 import { useQuery } from "react-query";
+import { useSuperHeros } from "../hooks/useSuperHeros";
+import { Link } from "react-router-dom";
 
-const fetchSuperHeros = () => {
-  return axios.get("http://localhost:4000/superheros");
-};
 export const RQSuperHeros = () => {
-  const { isLoading, data, isError, error, isFetching ,refetch} = useQuery(
-    "super-heros",
-    fetchSuperHeros,
-    {
-      staleTime: 30000, // helps u reduce the number OF NETWORK REQUEST
-      //refetchOnMount: true, //this refetches on mount we can use it to manage number of requests :: this can also be 'always'
+  const onSuccess = () => {
+    console.log("on sucess side effects ");
+  };
 
-      enabled:false  // this does not fetch the data on mount
-    }
-  );
+  const onError = () => {
+    console.log("on error  side effects ");
+  };
+  const { isLoading, data, isError, error, isFetching, refetch } =
+    useSuperHeros(onSuccess, onError);
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return <h2>Loading...</h2>;
   }
 
@@ -26,11 +24,17 @@ export const RQSuperHeros = () => {
 
   return (
     <>
-      {data?.data.map((hero) => {
-        return <div>{hero.name}</div>;
+      {data?.data?.map((hero) => {
+        return <div key={hero.id} ><Link to={`/rq-super-heroes/${hero.id}`}>{hero.name}</Link></div>;
       })}
 
-      <button onClick={()=>{refetch()}}>Fetch Heros</button>
+      <button
+        onClick={() => {
+          refetch();
+        }}
+      >
+        Fetch Heros
+      </button>
     </>
   );
 };
